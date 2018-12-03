@@ -1,0 +1,1 @@
+cmd_/usr/local/go/src/yulong-hids/syscall_hook/syshook_execve.ko.unsigned := ld -r -m elf_x86_64 -T /usr/src/kernels/2.6.32-431.el6.x86_64/scripts/module-common.lds --build-id -o /usr/local/go/src/yulong-hids/syscall_hook/syshook_execve.ko.unsigned /usr/local/go/src/yulong-hids/syscall_hook/syshook_execve.o /usr/local/go/src/yulong-hids/syscall_hook/syshook_execve.mod.o 

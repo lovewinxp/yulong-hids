@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"log"
+	"strings"
 	"yulong-hids/web/models"
 	"yulong-hids/web/settings"
 	"yulong-hids/web/utils"
@@ -31,16 +33,20 @@ func (c *ClientController) Get() {
 
 	paginator := c.InitPaginator()
 	start, limit := paginator.ToParameter()
-
+	log.Println("start:", start)
 	var query bson.M
 	if filter == "linux" {
 		query = bson.M{"system": bson.M{"$regex": "^((?!windows)[\\s\\S])*$", "$options": "$i"}}
 	} else if flag, exist := settings.ClientHealthTag[filter]; exist {
 		query = bson.M{"health": flag}
 	} else {
-		query = utils.AllKeyRegexQuery(filter, cli)
-	}
 
+		query = utils.AllKeyRegexQuery(filter, cli)
+		if strings.Count(filter, ".")==3{
+			start=0
+		}
+
+	}
 	json = cli.GetSortedTop(query, start, limit, "health", "ip")
 	c.Data["json"] = json
 	c.ServeJSON()

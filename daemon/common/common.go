@@ -117,10 +117,57 @@ func InArray(list []string, value string, like bool) bool {
 
 // 获取一个可以绑定的内网IP
 func BindAddr() string{
-    // 通过连接一个可达的任何一个地址，获取本地的内网的地址
-	conn, _ := net.Dial("udp", "114.114.114.114:53")
-	defer conn.Close()
-	localAddr := conn.LocalAddr().String()
-	idx := strings.LastIndex(localAddr, ":")
-	return fmt.Sprintf("%s:65512", localAddr[0:idx])
+	var ip_num int=0
+	var internal_ip string
+	is_internal_ip:=false
+	is_external_ip:=false
+
+	addrs, err := net.InterfaceAddrs()
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	for _, address := range addrs {
+
+		// 检查ip地址判断是否回环地址
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+
+			if ip4 :=ipnet.IP.To4() ;ip4 != nil {
+				ip_num+=1
+				switch true {
+				case ip4[0] == 10:
+					is_internal_ip=true
+					internal_ip=ipnet.IP.String()
+				case ip4[0] == 172 && ip4[1] >= 16 && ip4[1] <= 31:
+					is_internal_ip=true
+					internal_ip=ipnet.IP.String()
+				case ip4[0] == 192 && ip4[1] == 168:
+					is_internal_ip=true
+					internal_ip=ipnet.IP.String()
+				default:
+					is_external_ip=true
+					//external_ip=ipnet.IP.String()
+				}
+
+				//fmt.Println("ip:", ipnet.IP.String())
+			}
+
+		}
+	}
+
+	if ip_num>1 && is_internal_ip==true && is_external_ip==true{
+
+		return fmt.Sprintf("%s:65512", internal_ip)
+
+	}	else {
+		// 通过连接一个可达的任何一个地址，获取本地的内网的地址
+		conn, _ := net.Dial("udp", "114.114.114.114:53")
+		defer conn.Close()
+		localAddr := conn.LocalAddr().String()
+		idx := strings.LastIndex(localAddr, ":")
+		return fmt.Sprintf("%s:65512", localAddr[0:idx])
+
+	}
 }

@@ -1,3 +1,5 @@
+cert.pem
+private.pem
 .idea/
 web/conf/
 web/logs.log

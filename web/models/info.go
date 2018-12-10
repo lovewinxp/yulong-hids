@@ -49,12 +49,30 @@ func (c *Info) GetInfoByIp(ip string) []Info {
 	mConn := wmongo.Conn()
 	defer mConn.Close()
 
+
+
+
 	var cli []Info
 	collections := mConn.DB("").C("info")
 
-	if err := collections.Find(bson.M{"ip": ip}).All(&cli); err != nil {
+	//	db.getCollection('info').aggregate(
+	//		[ { $match : { ip : "172.16.1.1" } } ,{$group: {_id: "$type", "time": {$first: "$uptime"}, "data": {$first: "$data"}}}, {$sort:{"uptime":-1}}]
+	//);
+
+
+	m := []bson.M{
+		{"$match": bson.M{"ip": ip}},
+		{"$group": bson.M{"_id": "$type", "time": bson.M{"$first": "$uptime"} ,  "ip": bson.M{"$first": "$ip"} ,  "system": bson.M{"$first": "$system"} ,  "type": bson.M{"$first": "$type"} ,   "data": bson.M{"$first": "$data"}    }},
+		{"$sort": bson.M{"uptime": -1}}	}
+
+
+	if err := collections.Pipe(m).All(&cli); err != nil {
 		beego.Error("Info Find all Error", err)
 	}
+
+	//if err := collections.Find(bson.M{"ip": ip}).All(&cli); err != nil {
+	//	beego.Error("Info Find all Error", err)
+	//}
 
 	return cli
 }

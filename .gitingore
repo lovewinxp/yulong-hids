@@ -1,0 +1,6 @@
+.idea/
+web/conf/
+web/logs.log
+web/upload_files/
+web/web
+
